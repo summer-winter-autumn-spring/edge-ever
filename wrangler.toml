@@ -1,0 +1,39 @@
+name = "edge-ever"
+main = ".wrangler/edgeever-worker/index.js"
+compatibility_date = "2026-06-26"
+workers_dev = true
+no_bundle = true
+find_additional_modules = true
+base_dir = ".wrangler/edgeever-worker"
+
+[[rules]]
+type = "ESModule"
+globs = ["modules/*.js"]
+fallthrough = true
+
+[build]
+command = "bun scripts/build-cloudflare-worker.mjs"
+watch_dir = ["apps/api/src", "packages/shared/src"]
+
+[assets]
+directory = "apps/web/dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*", "/mcp", "/mcp/*", "/.well-known/oauth-protected-resource*", "/.well-known/oauth-authorization-server*", "/.well-known/openid-configuration*", "/__scheduled", "/s/*", "/share/*"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "edgeever"
+database_id = "e60c8bef-22a3-4e43-9a6d-ed01c0dc00a5"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "RESOURCES"
+bucket_name = "edgeever-resources"
+preview_bucket_name = "edgeever-resources"
+
+[observability]
+enabled = true
+
+[version_metadata]
+binding = "CF_VERSION_METADATA"

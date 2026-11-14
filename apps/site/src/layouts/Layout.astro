@@ -1,0 +1,272 @@
+---
+import { SEO } from "astro-seo";
+import { getImage } from "astro:assets";
+import { getHeroImage } from "@/assets/hero";
+import Footer from "@/components/footer.astro";
+import Navbar from "@/components/navbar/navbar.astro";
+import {
+  getLocalizedPath,
+  getSiteLocale,
+  siteCopy,
+  siteLocaleDataAttribute,
+  siteLocalePrefixes,
+  siteLocales,
+  siteLocaleStorageKey,
+} from "@/i18n";
+import "@fontsource-variable/inter/index.css";
+import "@fontsource-variable/bricolage-grotesque";
+import "../styles/global.css";
+
+export interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  openGraphType?: "website" | "article";
+  articlePublishedTime?: string;
+  articleModifiedTime?: string;
+  articleAuthor?: string;
+  articleSection?: string;
+  articleTags?: string[];
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
+  localeRedirect?: boolean;
+}
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
+const locale = getSiteLocale(Astro.url.pathname);
+const heroProductImage = getHeroImage(locale);
+const copy = siteCopy[locale].layout;
+const localeAlternateUrls = Object.fromEntries(
+  siteLocales.map((item) => [
+    item,
+    new URL(getLocalizedPath(item, Astro.url.pathname), Astro.site).toString(),
+  ]),
+) as Record<(typeof siteLocales)[number], string>;
+
+const defaultDescription = copy.defaultDescription;
+// Build a content-hashed JPEG so crawlers can fetch a fresh branded preview.
+const defaultShareImage = await getImage({
+  src: heroProductImage,
+  width: 1200,
+  height: 630,
+  fit: "contain",
+  format: "jpg",
+  background: "#ffffff",
+});
+
+const {
+  title,
+  description = defaultDescription,
+  image = defaultShareImage.src,
+  imageAlt = copy.imageAlt,
+  openGraphType = "website",
+  articlePublishedTime,
+  articleModifiedTime,
+  articleAuthor,
+  articleSection,
+  articleTags,
+  jsonLd,
+  noindex = false,
+  localeRedirect = true,
+} = Astro.props;
+
+const resolvedImageWithDomain = new URL(
+  image === "/opengraph.jpg" ? defaultShareImage.src : image,
+  Astro.site,
+).toString();
+
+const makeTitle = title
+  ? title + " | " + "EdgeEver"
+  : copy.defaultTitle;
+
+const faviconVersion = "edgeever-open-cat-20260809";
+const localeRedirectScript = `(() => {
+  const storageKey = ${JSON.stringify(siteLocaleStorageKey)};
+  const localeAttribute = ${JSON.stringify(siteLocaleDataAttribute)};
+  const supportedLocales = ${JSON.stringify(siteLocales)};
+  const prefixes = ${JSON.stringify(siteLocalePrefixes)};
+  const prefixPattern = /^\\/(zh-tw|en|es|de|fr|ja|pl|ru)(?=\\/|$)/;
+  const normalizeLocale = (locale) => {
+    if (!locale) return null;
+    const normalized = String(locale).trim().replaceAll("_", "-").toLowerCase();
+
+    if (
+      normalized === "zh-tw" ||
+      normalized === "zh-hant" ||
+      normalized.startsWith("zh-tw-") ||
+      normalized.startsWith("zh-hant-") ||
+      normalized === "zh-hk" ||
+      normalized.startsWith("zh-hk-") ||
+      normalized === "zh-mo" ||
+      normalized.startsWith("zh-mo-")
+    ) return "zh-TW";
+    if (normalized === "zh" || normalized.startsWith("zh-")) return "zh-CN";
+    if (normalized === "en" || normalized.startsWith("en-")) return "en-US";
+    if (normalized === "es" || normalized.startsWith("es-")) return "es";
+    if (normalized === "de" || normalized.startsWith("de-")) return "de";
+    if (normalized === "fr" || normalized.startsWith("fr-")) return "fr";
+    if (normalized === "ja" || normalized.startsWith("ja-")) return "ja";
+    if (normalized === "pl" || normalized.startsWith("pl-")) return "pl";
+    if (normalized === "ru" || normalized.startsWith("ru-")) return "ru";
+    return null;
+  };
+  const getStoredLocale = () => {
+    try {
+      return normalizeLocale(window.localStorage.getItem(storageKey));
+    } catch {
+      return null;
+    }
+  };
+  const writeStoredLocale = (locale) => {
+    if (!supportedLocales.includes(locale)) return;
+    try {
+      window.localStorage.setItem(storageKey, locale);
+    } catch {
+      // Local storage can be unavailable in private or restricted browser contexts.
+    }
+  };
+  const getBrowserLocale = () => {
+    const browserLocales = navigator.languages?.length ? navigator.languages : [navigator.language];
+    let sawCandidate = false;
+
+    for (const locale of browserLocales) {
+      if (!locale) continue;
+      sawCandidate = true;
+      const supported = normalizeLocale(locale);
+      if (supported) return supported;
+    }
+
+    return sawCandidate ? "en-US" : null;
+  };
+  const getCurrentLocale = (pathname) => {
+    if (pathname === "/zh-tw" || pathname.startsWith("/zh-tw/")) return "zh-TW";
+    if (pathname === "/en" || pathname.startsWith("/en/")) return "en-US";
+    if (pathname === "/es" || pathname.startsWith("/es/")) return "es";
+    if (pathname === "/de" || pathname.startsWith("/de/")) return "de";
+    if (pathname === "/fr" || pathname.startsWith("/fr/")) return "fr";
+    if (pathname === "/ja" || pathname.startsWith("/ja/")) return "ja";
+    if (pathname === "/pl" || pathname.startsWith("/pl/")) return "pl";
+    if (pathname === "/ru" || pathname.startsWith("/ru/")) return "ru";
+    return "zh-CN";
+  };
+  const isExplicitLocalePath = (pathname) => prefixPattern.test(pathname);
+  const stripPrefix = (pathname) => {
+    const normalizedPath = pathname.startsWith("/") ? pathname : "/" + pathname;
+    return normalizedPath.replace(prefixPattern, "") || "/";
+  };
+  const getLocalizedPath = (locale, pathname) => {
+    const barePath = stripPrefix(pathname);
+    const prefix = prefixes[locale] || "";
+    if (!prefix) return barePath;
+    return barePath === "/" ? prefix + "/" : prefix + barePath;
+  };
+  const getDesiredLocale = (pathname) => {
+    if (isExplicitLocalePath(pathname)) return null;
+
+    const browserLocale = getBrowserLocale();
+    const storedLocale = getStoredLocale();
+
+    if (browserLocale === "zh-CN" || storedLocale === "zh-CN") {
+      return "zh-CN";
+    }
+
+    return storedLocale ?? browserLocale;
+  };
+  const desiredLocale = getDesiredLocale(window.location.pathname);
+
+  if (desiredLocale && desiredLocale !== getCurrentLocale(window.location.pathname)) {
+    const nextPath = getLocalizedPath(desiredLocale, window.location.pathname);
+    window.location.replace(nextPath + window.location.search + window.location.hash);
+  }
+
+  document.addEventListener("click", (event) => {
+    const target = event.target instanceof Element ? event.target.closest("[" + localeAttribute + "]") : null;
+    const locale = target?.getAttribute(localeAttribute);
+
+    if (locale) {
+      writeStoredLocale(locale);
+    }
+  }, { capture: true });
+})();`;
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" href={`/favicon.ico?v=${faviconVersion}`} sizes="any" />
+    <link rel="icon" type="image/svg+xml" href={`/favicon.svg?v=${faviconVersion}`} />
+    <link rel="icon" type="image/png" sizes="192x192" href={`/icon-192.png?v=${faviconVersion}`} />
+    <link rel="apple-touch-icon" href={`/apple-touch-icon.png?v=${faviconVersion}`} />
+    {
+      siteLocales.map((item) => (
+        <link rel="alternate" hreflang={item} href={localeAlternateUrls[item]} />
+      ))
+    }
+    <link rel="alternate" hreflang="x-default" href={localeAlternateUrls["zh-CN"]} />
+    <meta name="theme-color" content="#f8fafc" />
+    <meta name="generator" content={Astro.generator} />
+    {localeRedirect && <script is:inline set:html={localeRedirectScript} />}
+
+    <!-- <link rel="preload" as="image" href={src} alt="Hero" /> -->
+    <SEO
+      title={makeTitle}
+      description={description}
+      canonical={canonicalURL}
+      noindex={noindex}
+      twitter={{
+        creator: "@tianma_if",
+        card: "summary_large_image",
+        title: makeTitle,
+        description,
+        image: resolvedImageWithDomain,
+        imageAlt,
+      }}
+      openGraph={{
+        basic: {
+          url: canonicalURL,
+          type: openGraphType,
+          title: makeTitle,
+          image: resolvedImageWithDomain,
+        },
+        optional: {
+          description,
+          locale: copy.ogLocale,
+          siteName: "EdgeEver",
+        },
+        image: {
+          alt: imageAlt,
+        },
+        article:
+          openGraphType === "article"
+            ? {
+                publishedTime: articlePublishedTime,
+                modifiedTime: articleModifiedTime,
+                authors: articleAuthor ? [articleAuthor] : undefined,
+                section: articleSection,
+                tags: articleTags,
+              }
+            : undefined,
+      }}
+    />
+    {
+      jsonLd && (
+        <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+      )
+    }
+  </head>
+  <body>
+    <Navbar />
+    <slot />
+    <Footer />
+    <style is:global>
+      /* Improve Page speed */
+      /* https://css-tricks.com/almanac/properties/c/content-visibility/ */
+      img {
+        content-visibility: auto;
+      }
+    </style>
+  </body>
+</html>

@@ -1,0 +1,110 @@
+import { defineConfig } from "astro/config";
+import tailwindcss from "@tailwindcss/vite";
+import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
+import icon from "astro-icon";
+
+import react from "@astrojs/react";
+
+// https://astro.build/config
+export default defineConfig({
+  site: "https://edgeever.org",
+  server: {
+    port: 4321,
+    host: "127.0.0.1"
+  },
+  integrations: [
+    mdx(),
+    sitemap({
+      i18n: {
+        defaultLocale: "zh-CN",
+        locales: {
+          "zh-CN": "zh-CN",
+          "zh-tw": "zh-TW",
+          en: "en-US",
+          es: "es",
+          de: "de",
+          fr: "fr",
+          ja: "ja",
+          pl: "pl",
+          ru: "ru",
+        },
+      },
+    }),
+    icon(),
+    react(),
+  ],
+  redirects: {
+    "/guides/evernote-migration": "/blog/note-migration-guide",
+    "/guides/memos-migration": "/blog/note-migration-guide",
+    "/guides/notion-migration": "/blog/note-migration-guide",
+    "/blog/evernote-migration-guide": "/blog/note-migration-guide",
+    "/blog/memos-migration-guide": "/blog/note-migration-guide",
+    "/blog/notion-migration-guide": "/blog/note-migration-guide",
+    "/blog/flomo-migration-guide": "/blog/note-migration-guide",
+    "/en/guides/evernote-migration": "/en/blog/note-migration-guide",
+    "/en/guides/memos-migration": "/en/blog/note-migration-guide",
+    "/en/guides/notion-migration": "/en/blog/note-migration-guide",
+    "/en/blog/evernote-migration-guide": "/en/blog/note-migration-guide",
+    "/en/blog/memos-migration-guide": "/en/blog/note-migration-guide",
+    "/en/blog/notion-migration-guide": "/en/blog/note-migration-guide",
+    "/en/blog/flomo-migration-guide": "/en/blog/note-migration-guide",
+    "/ja/guides/evernote-migration": "/ja/blog/note-migration-guide",
+    "/ja/guides/memos-migration": "/ja/blog/note-migration-guide",
+    "/ja/guides/notion-migration": "/ja/blog/note-migration-guide",
+    "/ja/blog/evernote-migration-guide": "/ja/blog/note-migration-guide",
+    "/ja/blog/memos-migration-guide": "/ja/blog/note-migration-guide",
+    "/ja/blog/notion-migration-guide": "/ja/blog/note-migration-guide",
+    "/ja/blog/flomo-migration-guide": "/ja/blog/note-migration-guide",
+    "/pl/guides/evernote-migration": "/pl/blog/note-migration-guide",
+    "/pl/guides/memos-migration": "/pl/blog/note-migration-guide",
+    "/pl/guides/notion-migration": "/pl/blog/note-migration-guide",
+    "/pl/blog/evernote-migration-guide": "/pl/blog/note-migration-guide",
+    "/pl/blog/memos-migration-guide": "/pl/blog/note-migration-guide",
+    "/pl/blog/notion-migration-guide": "/pl/blog/note-migration-guide",
+    "/pl/blog/flomo-migration-guide": "/pl/blog/note-migration-guide",
+    "/zh-tw/guides/evernote-migration": "/zh-tw/blog/note-migration-guide",
+    "/zh-tw/guides/memos-migration": "/zh-tw/blog/note-migration-guide",
+    "/zh-tw/guides/notion-migration": "/zh-tw/blog/note-migration-guide",
+    "/zh-tw/blog/evernote-migration-guide": "/zh-tw/blog/note-migration-guide",
+    "/zh-tw/blog/memos-migration-guide": "/zh-tw/blog/note-migration-guide",
+    "/zh-tw/blog/notion-migration-guide": "/zh-tw/blog/note-migration-guide",
+    "/zh-tw/blog/flomo-migration-guide": "/zh-tw/blog/note-migration-guide",
+    "/es/guides/evernote-migration": "/es/blog/note-migration-guide",
+    "/es/guides/memos-migration": "/es/blog/note-migration-guide",
+    "/es/guides/notion-migration": "/es/blog/note-migration-guide",
+    "/es/blog/evernote-migration-guide": "/es/blog/note-migration-guide",
+    "/es/blog/memos-migration-guide": "/es/blog/note-migration-guide",
+    "/es/blog/notion-migration-guide": "/es/blog/note-migration-guide",
+    "/es/blog/flomo-migration-guide": "/es/blog/note-migration-guide",
+    "/de/guides/evernote-migration": "/de/blog/note-migration-guide",
+    "/de/guides/memos-migration": "/de/blog/note-migration-guide",
+    "/de/guides/notion-migration": "/de/blog/note-migration-guide",
+    "/de/blog/evernote-migration-guide": "/de/blog/note-migration-guide",
+    "/de/blog/memos-migration-guide": "/de/blog/note-migration-guide",
+    "/de/blog/notion-migration-guide": "/de/blog/note-migration-guide",
+    "/de/blog/flomo-migration-guide": "/de/blog/note-migration-guide",
+    "/fr/guides/evernote-migration": "/fr/blog/note-migration-guide",
+    "/fr/guides/memos-migration": "/fr/blog/note-migration-guide",
+    "/fr/guides/notion-migration": "/fr/blog/note-migration-guide",
+    "/fr/blog/evernote-migration-guide": "/fr/blog/note-migration-guide",
+    "/fr/blog/memos-migration-guide": "/fr/blog/note-migration-guide",
+    "/fr/blog/notion-migration-guide": "/fr/blog/note-migration-guide",
+    "/fr/blog/flomo-migration-guide": "/fr/blog/note-migration-guide",
+    "/ru/guides/evernote-migration": "/ru/blog/note-migration-guide",
+    "/ru/guides/memos-migration": "/ru/blog/note-migration-guide",
+    "/ru/guides/notion-migration": "/ru/blog/note-migration-guide",
+    "/ru/blog/evernote-migration-guide": "/ru/blog/note-migration-guide",
+    "/ru/blog/memos-migration-guide": "/ru/blog/note-migration-guide",
+    "/ru/blog/notion-migration-guide": "/ru/blog/note-migration-guide",
+    "/ru/blog/flomo-migration-guide": "/ru/blog/note-migration-guide",
+  },
+  vite: {
+    plugins: [tailwindcss()],
+    server: {
+      fs: {
+        allow: ["../.."],
+      },
+    },
+  },
+});
